@@ -1,93 +1,93 @@
 # App-Shot
 
-App-Shot es una herramienta de línea de comandos para Windows que captura una ventana de una aplicación abierta y la guarda como PNG. Permite redimensionar la ventana antes de capturarla para obtener imágenes con dimensiones específicas, útiles para documentación, informes o comparaciones de interfaces.
+App-Shot is a command-line tool for Windows that captures an open application's window and saves it as a PNG. It can resize the window before capturing it to produce images with specific dimensions, useful for documentation, reports, or interface comparisons.
 
-La aplicación se adapta al nuevo tamaño antes de la captura: **no se reescala la imagen después**. Se captura una sola ventana, no todo el escritorio ni un vídeo.
+The application lays out its content at the new size before capture: **the image is not scaled afterward**. App-Shot captures a single window, not the entire desktop or a video.
 
-El ejecutable se llama `window-shot.exe`.
+The executable is named `window-shot.exe`.
 
-## Qué permite hacer
+## Features
 
-- Listar las ventanas visibles con su índice, PID, ejecutable y título.
-- Seleccionar una ventana por índice, PID o parte de su título.
-- Capturarla con su tamaño actual o solicitar un tamaño de salida en píxeles.
-- Guardar el resultado en un archivo PNG, por defecto `screenshot.png`.
-- Capturar sin incluir otras ventanas superpuestas, solicitando a la ventana seleccionada que dibuje su propio contenido mediante la API Win32 `PrintWindow`.
+- List visible windows with their index, PID, executable name, and title.
+- Select a window by index, PID, or part of its title.
+- Capture it at its current size or request an output size in pixels.
+- Save the result as a PNG file, defaulting to `screenshot.png`.
+- Capture without including overlapping windows by asking the selected window to render its own content through the Win32 `PrintWindow` API.
 
-## Requisitos y compilación
+## Requirements and build
 
-- Windows 10 u 11 con una sesión de escritorio.
-- CMake 3.20 o posterior.
-- Visual Studio o Build Tools con la carga de trabajo **Desarrollo para el escritorio con C++** y el Windows SDK; se requiere soporte de C++20.
+- Windows 10 or 11 with a desktop session.
+- CMake 3.20 or later.
+- Visual Studio or Build Tools with the **Desktop development with C++** workload and the Windows SDK; C++20 support is required.
 
-Desde PowerShell, en la carpeta del proyecto:
+From PowerShell, in the project directory:
 
 ```powershell
 cmake -S . -B build
 cmake --build build --config Release
 ```
 
-Con el generador de Visual Studio, el ejecutable queda en `build\Release\window-shot.exe`. La captura utiliza Win32, GDI+, GDI y DWM; no requiere bibliotecas externas.
+With the Visual Studio generator, the executable is created at `build\Release\window-shot.exe`. Capture uses Win32, GDI+, GDI, and DWM; no third-party libraries are required.
 
-## Uso
+## Usage
 
-Abre primero la aplicación cuya ventana quieres capturar.
+First, open the application whose window you want to capture.
 
 ```powershell
-# Listar las ventanas disponibles
+# List available windows
 .\build\Release\window-shot.exe --list
 
-# Capturar una ventana por parte de su título, sin redimensionarla
-.\build\Release\window-shot.exe --title "Mi aplicación" --out captura.png
+# Capture a window by part of its title, without resizing it
+.\build\Release\window-shot.exe --title "My application" --out capture.png
 
-# Redimensionar la ventana para obtener un PNG de 1280 × 720 píxeles
-.\build\Release\window-shot.exe --title "Mi aplicación" --size 1280x720 --out captura-720p.png
+# Resize the window to produce a 1280 × 720 pixel PNG
+.\build\Release\window-shot.exe --title "My application" --size 1280x720 --out capture-720p.png
 
-# Seleccionar por el índice mostrado en --list
-.\build\Release\window-shot.exe --index 2 --out ventana.png
+# Select by the index shown in --list
+.\build\Release\window-shot.exe --index 2 --out window.png
 
-# Seleccionar por PID; sustituir 1234 por el PID de la ventana
-.\build\Release\window-shot.exe --pid 1234 --out ventana.png
+# Select by PID; replace 1234 with the window's PID
+.\build\Release\window-shot.exe --pid 1234 --out window.png
 
-# Combinar PID y título para distinguir ventanas del mismo proceso
-.\build\Release\window-shot.exe --pid 1234 --title "Documento" --out documento.png
+# Combine PID and title to distinguish windows belonging to the same process
+.\build\Release\window-shot.exe --pid 1234 --title "Document" --out document.png
 ```
 
-### Opciones
+### Options
 
-| Opción | Comportamiento |
+| Option | Behavior |
 | --- | --- |
-| `--list` | Muestra las ventanas visibles con título, excluyendo ventanas secundarias y de herramientas. No realiza una captura. |
-| `--index N` | Selecciona una fila de la lista, empezando en 1. La lista se ordena por ejecutable, título y PID; los índices pueden cambiar si se abren o cierran ventanas. Tiene prioridad sobre los otros selectores. |
-| `--pid PID` | Busca el PID completo o una subcadena numérica del PID. Puede combinarse con `--title`. |
-| `--title TEXT` | Busca una parte del título, sin distinguir mayúsculas y minúsculas. |
-| `--size WIDTHxHEIGHT` | Solicita las dimensiones finales del PNG, en píxeles. Cambia el tamaño real de la ventana antes de capturarla. |
-| `--out PATH` | Ruta del PNG de salida. Si se omite, escribe `screenshot.png` en el directorio de trabajo. Usa comillas si la ruta contiene espacios. |
+| `--list` | Lists visible windows with a title, excluding child and tool windows. Does not capture an image. |
+| `--index N` | Selects a row from the list, starting at 1. The list is sorted by executable name, title, and PID; indices may change when windows are opened or closed. Takes precedence over other selectors. |
+| `--pid PID` | Matches a full PID or a numeric substring of the PID. Can be combined with `--title`. |
+| `--title TEXT` | Matches part of the title, case-insensitively. |
+| `--size WIDTHxHEIGHT` | Requests the final PNG dimensions in pixels. Changes the actual window size before capturing it. |
+| `--out PATH` | Output PNG path. If omitted, writes `screenshot.png` in the working directory. Use quotes if the path contains spaces. |
 
-Se necesita un selector salvo al usar `--list`. Si no hay coincidencias o hay varias, la herramienta muestra las ventanas pertinentes y termina sin capturar; usa un selector más específico.
+A selector is required unless you use `--list`. If there are no matches or multiple matches, the tool displays the relevant windows and exits without capturing; use a more specific selector.
 
-## Tamaño y comportamiento de la captura
+## Capture size and behavior
 
-- La imagen conserva el borde superior, incluida la barra de título cuando exista, y recorta **8 píxeles a izquierda, derecha y abajo**. No es una captura exclusiva del área de contenido.
-- Para `--size 1280x720`, se solicita una ventana exterior de **1296 × 728 píxeles** para compensar ese recorte. Sin `--size`, el PNG mide 16 píxeles menos de ancho y 8 menos de alto que el rectángulo exterior de la ventana.
-- Si la ventana ya tiene el tamaño exterior solicitado, no se redimensiona ni se fuerza un repintado. Si cambia de tamaño, se solicita un repintado y se espera brevemente antes de capturar.
-- La ventana debe estar abierta. Si está minimizada, se restaura antes de capturarla.
-- El cambio de tamaño afecta a la aplicación real y **no se revierte** después de la captura.
+- The image preserves the top edge, including the title bar when present, and crops **8 pixels from the left, right, and bottom**. It is not a client-area-only capture.
+- For `--size 1280x720`, an outer window size of **1296 × 728 pixels** is requested to compensate for the crop. Without `--size`, the PNG is 16 pixels narrower and 8 pixels shorter than the outer window rectangle.
+- If the window already has the requested outer dimensions, it is not resized or forced to repaint. When its size changes, a repaint is requested and the tool waits briefly before capturing.
+- The window must be open. If minimized, it is restored before capture.
+- Resizing affects the actual application and **is not undone** after capture.
 
-## Limitaciones
+## Limitations
 
-- Algunas aplicaciones imponen tamaños mínimos o no admiten redimensionamiento; en esos casos, el PNG puede no tener las dimensiones solicitadas.
-- El recorte es fijo: no se calcula individualmente según el tema, los bordes o el escalado de cada ventana.
-- Ventanas con contenido protegido, renderizado exclusivo o ciertas tecnologías de aceleración gráfica pueden fallar o producir una captura incompleta con `PrintWindow`. No se garantiza compatibilidad con todas las aplicaciones.
-- La carpeta de salida debe existir y permitir escritura. Un archivo existente en la ruta de salida puede sobrescribirse.
+- Some applications enforce minimum sizes or do not support resizing; in those cases, the PNG may not have the requested dimensions.
+- The crop is fixed: it is not calculated individually for each window's theme, borders, or scaling.
+- Windows with protected content, exclusive rendering, or certain hardware-accelerated rendering technologies may fail or produce incomplete captures with `PrintWindow`. Compatibility with every application is not guaranteed.
+- The output directory must exist and be writable. An existing file at the output path may be overwritten.
 
-### Códigos de salida
+### Exit codes
 
-| Código | Significado |
+| Code | Meaning |
 | --- | --- |
-| `0` | Lista mostrada o captura guardada. |
-| `1` | Fallo al inicializar GDI+. |
-| `2` | Argumentos inválidos o falta un selector. |
-| `3` | Ninguna ventana coincide con el selector. |
-| `4` | Fallo al capturar o guardar el PNG. |
-| `5` | Varias ventanas coinciden con el selector. |
+| `0` | Window list displayed or capture saved. |
+| `1` | GDI+ initialization failed. |
+| `2` | Invalid arguments or missing selector. |
+| `3` | No window matches the selector. |
+| `4` | Failed to capture or save the PNG. |
+| `5` | Multiple windows match the selector. |
